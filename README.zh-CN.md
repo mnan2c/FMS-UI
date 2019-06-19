@@ -83,22 +83,22 @@ $ npm start         # 访问 http://localhost:8000
 ### 使用 docker
 
 ```bash
-# preview 
+# preview
 $ docker pull chenshuai2144/ant-design-pro
 $ docker run -p 80:80 chenshuai2144/ant-design-pro
 # open http://localhost
 
-# dev 
+# dev
 $ npm run docker:dev
 
-# build 
+# build
 $ npm run docker:build
 
 
-# production dev 
+# production dev
 $ npm run docker-prod:dev
 
-// production build 
+// production build
 $ npm run docker-prod:build
 ```
 
@@ -112,10 +112,5 @@ $ npm run docker-prod:build
 | --------- | --------- | --------- | --------- | --------- |
 | IE11, Edge| last 2 versions| last 2 versions| last 2 versions| last 2 versions
 
-## 参与贡献
-
-我们非常欢迎你的贡献，你可以通过以下方式和我们一起共建 :smiley:：
-
-- 在你的公司或个人项目中使用 Ant Design Pro。
-- 通过 [Issue](http://github.com/ant-design/ant-design-pro/issues) 报告 bug 或进行咨询。
-- 提交 [Pull Request](http://github.com/ant-design/ant-design-pro/pulls) 改进 Pro 的代码。
+## TODO
+1. 国际化

@@ -1,6 +1,6 @@
 English | [简体中文](./README.zh-CN.md) | [Русский](./README.ru-RU.md)
 
-<h1 align="center">Ant Design Pro</h1>
+<h1 align="center">FMS</h1>
 
 <div align="center">
 
@@ -93,22 +93,22 @@ $ npm start         # visit http://localhost:8000
 ### Use by docker
 
 ```bash
-# preview 
+# preview
 $ docker pull chenshuai2144/ant-design-pro
 $ docker run -p 80:80 chenshuai2144/ant-design-pro
 # open http://localhost
 
-# dev 
+# dev
 $ npm run docker:dev
 
-# build 
+# build
 $ npm run docker:build
 
 
-# production dev 
+# production dev
 $ npm run docker-prod:dev
 
-# production build 
+# production build
 $ npm run docker-prod:build
 ```
 

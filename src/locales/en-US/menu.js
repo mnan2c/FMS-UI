@@ -1,6 +1,7 @@
 export default {
   'menu.welcome': 'Welcome',
   'menu.more-blocks': 'More Blocks',
+  'menu.plan': 'Plan',
 
   'menu.account.center': 'Account Center',
   'menu.account.settings': 'Account Settings',

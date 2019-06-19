@@ -2,8 +2,18 @@
  * request 网络请求工具
  * 更详细的 api 文档: https://github.com/umijs/umi-request
  */
-import { extend } from 'umi-request';
-import { notification } from 'antd';
+// import { extend } from 'umi-request';
+// import { notification } from 'antd';
+import fetch from 'dva/fetch';
+import _ from 'lodash';
+import router from 'umi/router';
+import { getCookie } from './utils';
+
+// const apiRootUrl = 'http://106.14.215.64:8888';
+const apiRootUrl = 'http://localhost:8888';
+// process.env.NODE_ENV === 'development'
+//   ? process.env.WEBAPP_BACKEND_URL
+//   : '@@WEBAPP-BACKEND-URL@@';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -23,26 +33,157 @@ const codeMessage = {
   504: '网关超时。',
 };
 
+// /**
+//  * 异常处理程序
+//  */
+// const errorHandler = error => {
+//   const { response = {} } = error;
+//   const errortext = codeMessage[response.status] || response.statusText;
+//   const { status, url } = response;
+//
+//   notification.error({
+//     message: `请求错误 ${status}: ${url}`,
+//     description: errortext,
+//   });
+// };
+//
+// /**
+//  * 配置request请求时的默认参数
+//  */
+// const request = extend({
+//   errorHandler, // 默认错误处理
+//   credentials: 'include', // 默认请求是否带上cookie
+// });
+//
+// export default request;
 /**
- * 异常处理程序
+ * Requests a URL, returning a promise.
+ *
+ * @param  {string} url       The URL we want to request
+ * @param  {object} [option] The options we want to pass to "fetch"
+ * @return {object}           An object containing either "data" or "err"
  */
-const errorHandler = error => {
-  const { response = {} } = error;
-  const errortext = codeMessage[response.status] || response.statusText;
-  const { status, url } = response;
+export default function request(url, option, { redirect404 = false, noPreProcess = false } = {}) {
+  if (apiRootUrl) {
+    url = apiRootUrl + url;
+  }
+  const options = {
+    // expirys: isAntdPro(),
+    ...option,
+  };
+  /**
+   * Produce fingerprints based on url and parameters
+   * Maybe url has the same parameters
+   */
+  // const fingerprint = url + (options.body ? JSON.stringify(options.body) : '');
+  // const hashcode = hash
+  //   .sha256()
+  //   .update(fingerprint)
+  //   .digest('hex');
 
-  notification.error({
-    message: `请求错误 ${status}: ${url}`,
-    description: errortext,
-  });
-};
+  const defaultOptions = {
+    credentials: 'include',
+  };
+  const newOptions = { ...defaultOptions, ...options };
+  // const accessToken = getCookie('secondary_access_token') || getCookie('access_token');
+  // if (accessToken) {
+  // newOptions.headers = {
+  //   Authorization: includeAuth ? `Bearer ${accessToken}` : '',
+  //   ...newOptions.headers,
+  // };
+  if (!getCookie('access_token')) {
+    router.push('/user/login');
+  }
+  newOptions.headers = {
+    Authorization: getCookie('access_token'),
+    ...newOptions.headers,
+  };
+  // }
+  if (
+    newOptions.method === 'POST' ||
+    newOptions.method === 'PUT' ||
+    newOptions.method === 'DELETE'
+  ) {
+    if (!(newOptions.body instanceof FormData)) {
+      newOptions.headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
+        ...newOptions.headers,
+      };
+      newOptions.body = JSON.stringify(newOptions.body);
+    } else {
+      // newOptions.body is FormData
+      newOptions.headers = {
+        Accept: 'application/json',
+        // do not add content-type to formdata
+        // fetch will handle this automatically
+        ...newOptions.headers,
+      };
+    }
+  }
 
-/**
- * 配置request请求时的默认参数
- */
-const request = extend({
-  errorHandler, // 默认错误处理
-  credentials: 'include', // 默认请求是否带上cookie
-});
+  // const expirys = options.expirys && 60;
+  // // options.expirys !== false, return the cache,
+  // if (options.expirys !== false) {
+  //   const cached = sessionStorage.getItem(hashcode);
+  //   const whenCached = sessionStorage.getItem(`${hashcode}:timestamp`);
+  //   if (cached !== null && whenCached !== null) {
+  //     const age = (Date.now() - whenCached) / 1000;
+  //     if (age < expirys) {
+  //       const response = new Response(new Blob([cached]));
+  //       return response.json();
+  //     }
+  //     sessionStorage.removeItem(hashcode);
+  //     sessionStorage.removeItem(`${hashcode}:timestamp`);
+  //   }
+  // }
+  return (
+    fetch(url, newOptions)
+      // .then(checkStatus(suppressError))
+      // .then(response => cachedSave(response, hashcode))
+      .then(response => {
+        if (noPreProcess) {
+          return response;
+        }
+        const responseType = response.headers.get('content-type');
+        if (responseType && responseType.includes('application/json')) {
+          return response.json();
+        }
+        return response.text();
+      })
+      .catch(e => {
+        const status = e.name;
+        // if (status === 401) {
+        //   window.g_app._store.dispatch({
+        //     type: 'login/logout',
+        //   });
+        //   throw e;
+        // }
+        if (status === 401) {
+          router.push('/user/login');
+          return;
+        }
+        // environment should not be used
+        if (status === 403) {
+          router.push('/exception/403');
+          return;
+        }
+        // if (status <= 504 && status >= 500) {
+        //   router.push("/exception/500");
+        //   return;
+        // }
+        if (status >= 405 && status < 422) {
+          router.push('/exception/404');
+          return;
+        }
 
-export default request;
+        // default 404 will only show exception message
+        // special param to redirect to 404 page
+        if (status === 404 && redirect404) {
+          router.push('/404');
+          return;
+        }
+        throw e;
+      })
+  );
+}

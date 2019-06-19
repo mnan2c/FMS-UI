@@ -38,7 +38,7 @@ class HeaderView extends PureComponent {
     if (isMobile || !fixedHeader || layout === 'topmenu') {
       return '100%';
     }
-    return collapsed ? 'calc(100% - 80px)' : 'calc(100% - 256px)';
+    return collapsed ? 'calc(100% - 80px)' : 'calc(100% - 200px)';
   };
 
   handleNoticeClear = type => {
@@ -150,8 +150,7 @@ class HeaderView extends PureComponent {
   }
 }
 
-export default connect(({ user, global, setting, loading }) => ({
-  currentUser: user.currentUser,
+export default connect(({ global, setting, loading }) => ({
   collapsed: global.collapsed,
   fetchingNotices: loading.effects['global/fetchNotices'],
   notices: global.notices,
