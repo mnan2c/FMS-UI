@@ -14,6 +14,7 @@ const { Tab, UserName, Password, Submit } = Login;
 
 class LoginPage extends Component {
   state = {
+    notice: '',
     type: 'account',
     // autoLogin: true,
   };
@@ -25,8 +26,17 @@ class LoginPage extends Component {
         ...values,
       };
       login(param).then(resp => {
-        setCookie('access_token', resp.data, 24 * 60 * 60 * 1000);
-        router.push('/plan');
+        if (resp.statusCodeValue === 200) {
+          this.setState({
+            notice: '',
+          });
+          setCookie('access_token', resp.body, 24 * 60 * 60 * 1000);
+          router.push('/plan');
+        } else {
+          this.setState({
+            notice: '用户名或密码错误!',
+          });
+        }
       });
     }
   };
@@ -38,13 +48,14 @@ class LoginPage extends Component {
   //   });
   // };
 
-  renderMessage = content => (
-    <Alert style={{ marginBottom: 24 }} message={content} type="error" showIcon />
-  );
+  clearNotice = () => {
+    this.setState({ notice: '' });
+  };
 
   render() {
     const { submitting } = this.props;
     const {
+      notice,
       type,
       // autoLogin
     } = this.state;
@@ -57,16 +68,22 @@ class LoginPage extends Component {
             this.loginForm = form;
           }}
         >
-          <Tab key="account" tab="系统登录">
-            {login &&
-              login.status === 'error' &&
-              login.type === 'account' &&
-              !submitting &&
-              this.renderMessage('Invalid Username or password')}
-            <UserName name="userName" placeholder="用户名" />
+          <Tab key="account" tab="FMS登录">
+            {notice && (
+              <Alert
+                style={{ marginBottom: 24 }}
+                message={notice}
+                type="error"
+                showIcon
+                closable
+                onClose={this.clearNotice}
+              />
+            )}
+            <UserName name="userName" placeholder="用户名" onFocus={this.clearNotice} />
             <Password
               name="password"
               placeholder="密码"
+              onFocus={this.clearNotice}
               onPressEnter={() => this.loginForm.validateFields(this.handleSubmit)}
             />
           </Tab>

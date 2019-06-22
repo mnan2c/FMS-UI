@@ -16,3 +16,11 @@ export async function getPlans(pagination) {
 export async function deletePlan(id) {
   return request(`/api/plans/${id}`, { method: 'DELETE' });
 }
+
+export async function completePlan(id) {
+  const option = {
+    method: 'PUT',
+    body: {},
+  };
+  return request(`/api/plans/complete/${id}`, option);
+}

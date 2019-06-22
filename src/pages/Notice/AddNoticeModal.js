@@ -1,12 +1,12 @@
 import React from 'react';
 import { Form, Modal, Input, Select } from 'antd';
-import { createPlan } from '@/services/plan';
+import { createNotice } from '@/services/notice';
 
 const FormItem = Form.Item;
 const { TextArea } = Input;
 const { Option } = Select;
 
-class AddModal extends React.PureComponent {
+class AddNoticeModal extends React.PureComponent {
   state = {
     loading: false,
   };
@@ -22,11 +22,8 @@ class AddModal extends React.PureComponent {
       form: { validateFields },
     } = this.props;
     validateFields((err, fieldsValue) => {
-      const item = {
-        ...fieldsValue,
-        status: 1,
-      };
-      createPlan(item).then(() => {
+      if (err) return;
+      createNotice(fieldsValue).then(() => {
         onClose(true);
       });
     });
@@ -44,6 +41,7 @@ class AddModal extends React.PureComponent {
       wrapperCol: { span: 16 },
     };
 
+    // 内容，优先级
     return (
       <Modal
         destroyOnClose
@@ -55,20 +53,18 @@ class AddModal extends React.PureComponent {
       >
         <Form hideRequiredMark>
           <FormItem {...formItemLayout} label="内容">
-            {getFieldDecorator('name')(<TextArea placeholder="这里输入内容.." rows={4} />)}
+            {getFieldDecorator('name', {
+              rules: [{ required: true, message: '请填写内容！' }],
+            })(<TextArea placeholder="这里输入内容.." rows={4} />)}
           </FormItem>
           <FormItem {...formItemLayout} label="优先级">
-            {getFieldDecorator('priority')(
-              <Select
-                disabled
-                value="1"
-                defaultValue="1"
-                style={{ width: 200 }}
-                placeholder="选择优先级"
-              >
-                <Option value="0">紧急</Option>
-                <Option value="1">高</Option>
-                <Option value="2">普通</Option>
+            {getFieldDecorator('importance', {
+              rules: [{ required: true, message: '请选择！' }],
+            })(
+              <Select value="2" defaultValue="2" style={{ width: 200 }} placeholder="选择优先级">
+                <Option value="3">重要</Option>
+                <Option value="2">一般</Option>
+                <Option value="1">次要</Option>
               </Select>
             )}
           </FormItem>
@@ -78,4 +74,4 @@ class AddModal extends React.PureComponent {
   }
 }
 
-export default Form.create()(AddModal);
+export default Form.create()(AddNoticeModal);

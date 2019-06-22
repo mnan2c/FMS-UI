@@ -8,8 +8,9 @@ export async function queryCurrent() {
   return request('/api/currentUser');
 }
 
-export async function queryNotices() {
-  return request('/api/notices');
+export async function getAllUsers(pagination) {
+  const { current, pageSize } = pagination;
+  return request(`/api/user?page=${current}&size=${pageSize}`);
 }
 
 export async function login(item) {

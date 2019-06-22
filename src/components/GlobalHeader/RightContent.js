@@ -4,10 +4,12 @@ import { Spin, Tag, Menu, Icon, Avatar, Tooltip } from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import { NoticeIcon } from 'ant-design-pro';
+import router from 'umi/router';
 import HeaderSearch from '../HeaderSearch';
 import HeaderDropdown from '../HeaderDropdown';
 import SelectLang from '../SelectLang';
 import styles from './index.less';
+import { clearCookie } from '../../utils/utils';
 
 export default class GlobalHeaderRight extends PureComponent {
   getNoticeData() {
@@ -63,6 +65,11 @@ export default class GlobalHeaderRight extends PureComponent {
     });
   };
 
+  logout = () => {
+    clearCookie('access_token');
+    router.push('/user');
+  };
+
   render() {
     const {
       currentUser,
@@ -74,7 +81,7 @@ export default class GlobalHeaderRight extends PureComponent {
     } = this.props;
     const menu = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
-        <Menu.Item key="userCenter">
+        {/* <Menu.Item key="userCenter">
           <Icon type="user" />
           <FormattedMessage id="menu.account.center" defaultMessage="account center" />
         </Menu.Item>
@@ -86,8 +93,8 @@ export default class GlobalHeaderRight extends PureComponent {
           <Icon type="close-circle" />
           <FormattedMessage id="menu.account.trigger" defaultMessage="Trigger Error" />
         </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item key="logout">
+        <Menu.Divider /> */}
+        <Menu.Item key="logout" onClick={this.logout}>
           <Icon type="logout" />
           <FormattedMessage id="menu.account.logout" defaultMessage="logout" />
         </Menu.Item>
@@ -167,19 +174,20 @@ export default class GlobalHeaderRight extends PureComponent {
             emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
           />
         </NoticeIcon> */}
-        {/* currentUser.name ? (
-          <HeaderDropdown overlay={menu}>
-            <span className={`${styles.action} ${styles.account}`}>
-              <Avatar
-                size="small"
-                className={styles.avatar}
-                src={currentUser.avatar}
-                alt="avatar"
-              />
-              <span className={styles.name}>{currentUser.name}</span>
-            </span>
-          </HeaderDropdown>
-        ) : (
+        {/* currentUser.name ? ( */}
+        <HeaderDropdown overlay={menu}>
+          <span className={`${styles.action} ${styles.account}`}>
+            <Avatar
+              size="small"
+              className={styles.avatar}
+              src="http://www.clemon.top/img/avatar.jpg"
+              alt="avatar"
+            />
+            <span className={styles.name}>Morgan Zhang</span>
+          </span>
+        </HeaderDropdown>
+        {/* )
+         : (
           <Spin size="small" style={{ marginLeft: 8, marginRight: 8 }} />
         ) */}
         {/* <a onClick={this.handleLogin} style={{ marginRight: 32 }}>

@@ -20,6 +20,16 @@ export default [
         name: 'plan',
         component: '../pages/Plan/Plan',
       },
+      {
+        path: '/users',
+        name: 'user',
+        component: '../pages/User',
+      },
+      {
+        path: '/notice',
+        name: 'notice',
+        component: '../pages/Notice',
+      },
     ],
   },
 ];
