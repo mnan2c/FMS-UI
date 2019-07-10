@@ -54,9 +54,9 @@ class User extends React.Component {
       current: pageParam ? pagination.current - 1 : 0,
     })
       .then(resp => {
-        pagination.total = resp.body.totalElements;
+        pagination.total = resp.data.totalElements;
         this.setState({
-          listData: resp.body.content,
+          listData: resp.data.content,
           loading: false,
           pagination: {
             ...pagination,

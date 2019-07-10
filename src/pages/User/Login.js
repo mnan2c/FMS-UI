@@ -8,6 +8,7 @@ import Login from '@/components/Login';
 import router from 'umi/router';
 import styles from './Login.less';
 import { setCookie, getCookie } from '../../utils/utils';
+import { setAuthority } from '../../utils/authority';
 import { login, register } from '@/services/user';
 
 const { Tab, UserName, Password, Submit } = Login;
@@ -26,12 +27,15 @@ class LoginPage extends Component {
         ...values,
       };
       login(param).then(resp => {
-        if (resp.statusCodeValue === 200) {
+        if (resp.code === 200) {
+          setAuthority(resp.data.roleName);
           this.setState({
             notice: '',
           });
-          setCookie('access_token', resp.body, 24 * 60 * 60 * 1000);
-          router.push('/plan');
+          setCookie('access_token', resp.data.token, 2 * 1000);
+          setCookie('user_name', resp.data.name || '', 24 * 60 * 60 * 1000);
+          setCookie('user_avatar', resp.data.avatar || '', 24 * 60 * 60 * 1000);
+          router.push('/');
         } else {
           this.setState({
             notice: '用户名或密码错误!',

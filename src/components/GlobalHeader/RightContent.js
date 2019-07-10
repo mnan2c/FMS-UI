@@ -1,15 +1,16 @@
 import React, { PureComponent } from 'react';
-import { FormattedMessage, formatMessage } from 'umi/locale';
-import { Spin, Tag, Menu, Icon, Avatar, Tooltip } from 'antd';
+import { FormattedMessage } from 'umi/locale';
+import router from 'umi/router';
+import { Tag, Menu, Icon, Avatar } from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
-import { NoticeIcon } from 'ant-design-pro';
-import router from 'umi/router';
-import HeaderSearch from '../HeaderSearch';
+// import { NoticeIcon } from 'ant-design-pro';
+// import HeaderSearch from '../HeaderSearch';
 import HeaderDropdown from '../HeaderDropdown';
-import SelectLang from '../SelectLang';
+// import SelectLang from '../SelectLang';
 import styles from './index.less';
-import { clearCookie } from '../../utils/utils';
+import { clearCookie, getCookie } from '../../utils/utils';
+import ResetPassword from '../Fms/ResetPassword';
 
 export default class GlobalHeaderRight extends PureComponent {
   getNoticeData() {
@@ -71,14 +72,7 @@ export default class GlobalHeaderRight extends PureComponent {
   };
 
   render() {
-    const {
-      currentUser,
-      fetchingNotices,
-      onNoticeVisibleChange,
-      onMenuClick,
-      onNoticeClear,
-      theme,
-    } = this.props;
+    const { onMenuClick, theme } = this.props;
     const menu = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
         {/* <Menu.Item key="userCenter">
@@ -94,14 +88,19 @@ export default class GlobalHeaderRight extends PureComponent {
           <FormattedMessage id="menu.account.trigger" defaultMessage="Trigger Error" />
         </Menu.Item>
         <Menu.Divider /> */}
+        {/* <Menu.Item key="resetpassword" onClick={this.resetpassword}>
+          <Icon type="edit" />
+          <FormattedMessage id="menu.reset.password" defaultMessage="resetpassword" />
+        </Menu.Item> */}
+        <ResetPassword />
         <Menu.Item key="logout" onClick={this.logout}>
           <Icon type="logout" />
           <FormattedMessage id="menu.account.logout" defaultMessage="logout" />
         </Menu.Item>
       </Menu>
     );
-    const noticeData = this.getNoticeData();
-    const unreadMsg = this.getUnreadData(noticeData);
+    // const noticeData = this.getNoticeData();
+    // const unreadMsg = this.getUnreadData(noticeData);
     let className = styles.right;
     if (theme === 'dark') {
       className = `${styles.right}  ${styles.dark}`;
@@ -180,17 +179,16 @@ export default class GlobalHeaderRight extends PureComponent {
             <Avatar
               size="small"
               className={styles.avatar}
-              src="http://www.clemon.top/img/avatar.jpg"
+              src={getCookie('user_avatar') || 'http://www.clemon.top/img/avatar.jpg'}
               alt="avatar"
             />
-            <span className={styles.name}>Morgan Zhang</span>
+            <span className={styles.name}>{getCookie('user_name') || 'Anonymous'}</span>
           </span>
         </HeaderDropdown>
         {/* )
          : (
           <Spin size="small" style={{ marginLeft: 8, marginRight: 8 }} />
-        ) */}
-        {/* <a onClick={this.handleLogin} style={{ marginRight: 32 }}>
+        )  <a onClick={this.handleLogin} style={{ marginRight: 32 }}>
           登录
         </a> */}
       </div>

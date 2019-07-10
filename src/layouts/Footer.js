@@ -1,10 +1,10 @@
 import React, { Fragment } from 'react';
-import { Layout, Icon } from 'antd';
+import { Layout } from 'antd';
 import { GlobalFooter } from 'ant-design-pro';
 
 const { Footer } = Layout;
 const FooterView = () => (
-  <Footer style={{ padding: 0 }}>
+  <Footer style={{ padding: 0, opacity: 0.9 }}>
     <GlobalFooter
       // links={[
       //   {

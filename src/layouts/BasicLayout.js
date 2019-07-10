@@ -11,6 +11,7 @@ import Media from 'react-media';
 import { formatMessage } from 'umi/locale';
 import Authorized from '@/utils/Authorized';
 import logo from '../assets/logo.svg';
+import lufei from '../../public/lufei.jpg';
 import Footer from './Footer';
 import Header from './Header';
 import Context from './MenuContext';
@@ -154,7 +155,7 @@ class BasicLayout extends React.PureComponent {
 
     const isTop = PropsLayout === 'topmenu';
     const routerConfig = this.getRouterAuthority(pathname, routes);
-    const contentStyle = !fixedHeader ? { paddingTop: 0 } : {};
+    const contentStyle = !fixedHeader ? { paddingTop: 0, opacity: 0.9 } : { opacity: 0.9 };
     const layout = (
       <Layout>
         {isTop && !isMobile ? null : (
@@ -171,6 +172,8 @@ class BasicLayout extends React.PureComponent {
           style={{
             ...this.getLayoutStyle(),
             minHeight: '100vh',
+            background: `url(${lufei}) no-repeat`,
+            backgroundSize: '100%',
           }}
         >
           <Header
@@ -178,6 +181,7 @@ class BasicLayout extends React.PureComponent {
             handleMenuCollapse={this.handleMenuCollapse}
             logo={logo}
             isMobile={isMobile}
+            style={{ opacity: 0.95 }}
             {...this.props}
           />
           <Content className={styles.content} style={contentStyle}>
@@ -185,7 +189,7 @@ class BasicLayout extends React.PureComponent {
               {children}
             </Authorized>
           </Content>
-          <Footer />
+          {/* <Footer style={{ opacity: 0.9 }} /> */}
         </Layout>
       </Layout>
     );

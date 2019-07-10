@@ -46,7 +46,7 @@ class AddNoticeModal extends React.PureComponent {
       <Modal
         destroyOnClose
         visible={visible}
-        title="新增内容"
+        title=""
         onOk={this.handleSubmit}
         confirmLoading={loading}
         onCancel={this.handleCancel}

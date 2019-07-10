@@ -34,7 +34,7 @@ class Notice extends PureComponent {
     const { pagination } = this.state;
     getNotices(pagination).then(resp => {
       this.setState({
-        data: resp.body.content,
+        data: resp.data.content,
       });
     });
   };
@@ -92,7 +92,7 @@ class Notice extends PureComponent {
         <TagCloud
           style={{
             fontFamily: 'sans-serif',
-            fontSize: 30,
+            fontSize: 20,
             fontWeight: 'bold',
             fontStyle: 'italic',
             color: () => randomColor(),
@@ -101,22 +101,6 @@ class Notice extends PureComponent {
             height: '100%',
           }}
         >
-          {/* <div
-            style={{
-              fontFamily: 'serif',
-              fontSize: 40,
-              fontStyle: 'italic',
-              fontWeight: 'bold',
-              color: randomColor(),
-            }}
-          >
-            Futurama
-          </div>
-          <div style={{ fontFamily: 'courier' }}>He man</div>
-          <div style={{ fontSize: 30 }}>World trigger</div>
-          <div style={{ fontStyle: 'italic' }}>Avengers</div>
-          <div style={{ fontWeight: 200 }}>Family Guy</div>
-          <div style={{ color: 'green' }}>American Dad</div> */}
           {domWithData}
         </TagCloud>
         <AddNoticeModal visible={modalVisible} onClose={this.handleCloseModal} />

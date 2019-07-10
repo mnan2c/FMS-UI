@@ -1,8 +1,9 @@
 import request from '@/utils/request';
 
-export async function createPlan(item) {
+export async function savePlan(item, isCreate) {
+  const method = isCreate ? 'POST' : 'PUT';
   const option = {
-    method: 'POST',
+    method,
     body: item,
   };
   return request('/api/plans', option);

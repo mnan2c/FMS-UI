@@ -30,3 +30,15 @@ export async function register(item) {
   };
   return request(`/api/user/register?name=${name}&password=${password}`, option);
 }
+
+export async function resetPassword(item) {
+  const { name, oldPassword, newPassword } = item;
+  const option = {
+    method: 'PUT',
+    body: item,
+  };
+  return request(
+    `/api/user/resetpassword?name=${name}&oldPassword=${oldPassword}&newPassword=${newPassword}`,
+    option
+  );
+}

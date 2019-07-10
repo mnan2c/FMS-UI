@@ -3,10 +3,12 @@ export default {
   'menu.more-blocks': '更多区块',
   'menu.plan': '计划',
   'menu.user': '用户',
-  'menu.notice': '日醒',
+  'menu.notice': '提醒',
+  'menu.cee': '备战高考',
 
   'menu.account.center': '个人中心',
   'menu.account.settings': '个人设置',
   'menu.account.trigger': '触发报错',
   'menu.account.logout': '退出登录',
+  'menu.reset.password': '修改密码',
 };

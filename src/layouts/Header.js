@@ -120,7 +120,10 @@ class HeaderView extends PureComponent {
     const isTop = layout === 'topmenu';
     const width = this.getHeadWidth();
     const HeaderDom = visible ? (
-      <Header style={{ padding: 0, width }} className={fixedHeader ? styles.fixedHeader : ''}>
+      <Header
+        style={{ padding: 0, width, backgroundColor: 'rgba(85, 164, 231, 0.61)' }}
+        className={fixedHeader ? styles.fixedHeader : ''}
+      >
         {isTop && !isMobile ? (
           <TopNavHeader
             theme={navTheme}

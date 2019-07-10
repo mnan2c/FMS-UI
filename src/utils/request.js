@@ -3,11 +3,11 @@
  * 更详细的 api 文档: https://github.com/umijs/umi-request
  */
 // import { extend } from 'umi-request';
-// import { notification } from 'antd';
+import { message } from 'antd';
 import fetch from 'dva/fetch';
 import _ from 'lodash';
 import router from 'umi/router';
-import { getCookie } from './utils';
+import { getCookie, clearCookie } from './utils';
 
 // const apiRootUrl = 'http://106.14.215.64:8888';
 const apiRootUrl = 'http://localhost:8888';
@@ -142,6 +142,12 @@ export default function request(url, option, { redirect404 = false, noPreProcess
       // .then(checkStatus(suppressError))
       // .then(response => cachedSave(response, hashcode))
       .then(response => {
+        const { status } = response;
+        if (status === 401) {
+          message.error('用户名或密码错误！');
+          clearCookie('access_token');
+          router.push('/user/login');
+        }
         if (noPreProcess) {
           return response;
         }
@@ -153,12 +159,6 @@ export default function request(url, option, { redirect404 = false, noPreProcess
       })
       .catch(e => {
         const status = e.name;
-        // if (status === 401) {
-        //   window.g_app._store.dispatch({
-        //     type: 'login/logout',
-        //   });
-        //   throw e;
-        // }
         if (status === 401) {
           router.push('/user/login');
           return;

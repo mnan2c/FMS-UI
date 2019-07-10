@@ -1,23 +1,35 @@
 import React from 'react';
-import { Table, Spin, Card, Popconfirm } from 'antd';
+import { Table, Spin, Card, Popconfirm, Rate } from 'antd';
 import { getPlans, deletePlan, completePlan } from '@/services/plan';
-import moment from 'moment';
 // import ReactMarkdown from 'react-markdown';
-import AddModal from './AddModal';
+import PlanModal from './PlanModal';
 import { convertStrToUrl, isUrl } from '../../utils/utils';
 
 import styles from './Plan.less';
 
+const COMPLETE = 4;
+
 class Plan extends React.Component {
+  state = {
+    isCreate: true,
+    listData: [],
+    loading: false,
+    modalVisible: false,
+    pagination: {
+      current: 1,
+      pageSize: 10,
+    },
+  };
+
   pointEditRef = React.createRef();
 
   columns = [
     {
       title: 'ID',
       dataIndex: 'id',
-      width: '10%',
+      width: '5%',
       render: (val, record) => {
-        const color = record.status === 3 ? '#BCAAA4' : '';
+        const color = record.status === COMPLETE ? '#BCAAA4' : '';
         return <div style={{ color }}>{val}</div>;
       },
     },
@@ -26,7 +38,7 @@ class Plan extends React.Component {
       dataIndex: 'name',
       width: '50%',
       render: (val, record) => {
-        const color = record.status === 3 ? '#BCAAA4' : '#353535';
+        const color = record.status === COMPLETE ? '#BCAAA4' : '#000';
         const regex = /[0-9]\. /gi;
         const rawArr = val.split(regex);
         if (rawArr.length !== 1) {
@@ -47,15 +59,52 @@ class Plan extends React.Component {
     {
       title: '创建时间',
       dataIndex: 'createdDate',
-      width: '15%',
+      width: '10%',
       render: (val, record) => {
         if (!val) return '';
-        const { year, monthValue, dayOfMonth, hour, minute, second } = val;
-        const color = record.status === 3 ? '#BCAAA4' : '';
-        const dateVal = moment(
-          `${year}-${monthValue}-${dayOfMonth} ${hour}:${minute}:${second}`
-        ).format(`YYYY-MM-DD HH:mm:ss`);
+        const color = record.status === COMPLETE ? '#BCAAA4' : '';
+        const dateVal = `${String(val[0]).padStart(4, '0')}-${String(val[1]).padStart(
+          2,
+          '0'
+        )}-${String(val[2]).padStart(2, '0')}`;
         return <div style={{ color }}>{dateVal}</div>;
+      },
+    },
+    {
+      title: '优先级',
+      dataIndex: 'priority',
+      width: '10%',
+      render: val => {
+        switch (val) {
+          case 1:
+            return (
+              <Rate
+                disabled
+                count={3}
+                defaultValue={3}
+                style={{ color: '#1890FF', fontSize: 15 }}
+              />
+            );
+          case 3:
+            return (
+              <Rate
+                disabled
+                count={1}
+                defaultValue={1}
+                style={{ color: '#1890FF', fontSize: 15 }}
+              />
+            );
+          case 2:
+          default:
+            return (
+              <Rate
+                disabled
+                count={2}
+                defaultValue={2}
+                style={{ color: '#1890FF', fontSize: 15 }}
+              />
+            );
+        }
       },
     },
     {
@@ -65,21 +114,21 @@ class Plan extends React.Component {
       render: (val, record) => {
         let result = '';
         switch (val) {
-          case 0:
+          case 1:
+          default:
             result = '新建';
             break;
-          case 1:
+          case 2:
             result = '进行中';
             break;
-          case 2:
+          case 3:
             result = '阻塞';
             break;
-          case 3:
-          default:
+          case 4:
             result = '完成';
             break;
         }
-        const color = record.status === 3 ? '#BCAAA4' : '';
+        const color = record.status === COMPLETE ? '#BCAAA4' : '';
         return <div style={{ color }}>{result}</div>;
       },
     },
@@ -89,7 +138,7 @@ class Plan extends React.Component {
       width: '15%',
       render: (text, record) => (
         <>
-          {record.status === 3 ? (
+          {/* record.status === COMPLETE ? (
             undefined
           ) : (
             <Popconfirm
@@ -101,7 +150,9 @@ class Plan extends React.Component {
               <a>完成</a>
             </Popconfirm>
           )}
-          {record.status === 3 ? undefined : <span> | </span>}
+          {record.status === COMPLETE ? undefined : <span> | </span> */}
+          <a onClick={() => this.updateEntity(record)}>修改</a>
+          <span> | </span>
           <Popconfirm
             title="确认删除吗？"
             okText="是"
@@ -113,32 +164,7 @@ class Plan extends React.Component {
         </>
       ),
     },
-    // {
-    //   title: '优先级',
-    //   dataIndex: 'priority',
-    //   render: val => {
-    //     switch (val) {
-    //       case 0:
-    //         return <Tag color="#f50">Urgent</Tag>;
-    //       case 2:
-    //         return <Tag color="#87d068">Normal</Tag>;
-    //       case 1:
-    //       default:
-    //         return <Tag color="#2db7f5">High</Tag>;
-    //     }
-    //   },
-    // },
   ];
-
-  state = {
-    listData: [],
-    loading: false,
-    modalVisible: false,
-    pagination: {
-      current: 1,
-      pageSize: 10,
-    },
-  };
 
   componentDidMount() {
     this.refreshList();
@@ -152,15 +178,17 @@ class Plan extends React.Component {
       current: pageParam ? pagination.current - 1 : 0,
     })
       .then(resp => {
-        pagination.total = resp.body.totalElements;
-        this.setState({
-          listData: resp.body.content,
-          loading: false,
-          pagination: {
-            ...pagination,
-            current: pageParam ? pagination.current : 1,
-          },
-        });
+        if (resp) {
+          pagination.total = resp.data.totalElements;
+          this.setState({
+            listData: resp.data.content,
+            loading: false,
+            pagination: {
+              ...pagination,
+              current: pageParam ? pagination.current : 1,
+            },
+          });
+        }
       })
       .catch(() => {
         this.setState({ loading: false });
@@ -178,14 +206,23 @@ class Plan extends React.Component {
     deletePlan(param.id).then(() => this.refreshList());
   };
 
-  completePlan = param => {
-    completePlan(param.id).then(() => this.refreshList());
-  };
-
-  showModal = () => {
+  updateEntity = record => {
     this.setState({
       modalVisible: true,
+      isCreate: false,
+      record,
     });
+  };
+
+  createEntity = () => {
+    this.setState({
+      modalVisible: true,
+      isCreate: true,
+    });
+  };
+
+  completePlan = param => {
+    completePlan(param.id).then(() => this.refreshList());
   };
 
   handleTableChange = pageParam => {
@@ -203,20 +240,31 @@ class Plan extends React.Component {
   };
 
   render() {
-    const { listData, loading, modalVisible, pagination } = this.state;
+    const { listData, loading, modalVisible, pagination, isCreate, record } = this.state;
+
+    const dataWithKey = listData.map(data => ({ ...data, key: data.id }));
 
     return (
-      <Card title="PRIORITY ORIENTED" extra={<a onClick={this.showModal}>新增</a>}>
+      <Card
+        title="小目标"
+        extra={<a onClick={this.createEntity}>新增</a>}
+        style={{ background: 'rgba(255, 255, 255, 0.9)' }}
+      >
         <Spin spinning={loading}>
           <Table
             columns={this.columns}
             className={styles.fixedWidthTable}
-            dataSource={listData}
+            dataSource={dataWithKey}
             pagination={pagination}
             onChange={this.handleTableChange}
           />
         </Spin>
-        <AddModal visible={modalVisible} onClose={this.handleCloseModal} />
+        <PlanModal
+          visible={modalVisible}
+          onClose={this.handleCloseModal}
+          isCreate={isCreate}
+          record={record}
+        />
       </Card>
     );
   }
