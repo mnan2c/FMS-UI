@@ -12,7 +12,7 @@ import { formatMessage } from 'umi/locale';
 import Authorized from '@/utils/Authorized';
 import logo from '../assets/logo.svg';
 import lufei from '../../public/lufei.jpg';
-import Footer from './Footer';
+// import Footer from './Footer';
 import Header from './Header';
 import Context from './MenuContext';
 import SiderMenu from '@/components/SiderMenu';
@@ -172,7 +172,7 @@ class BasicLayout extends React.PureComponent {
           style={{
             ...this.getLayoutStyle(),
             minHeight: '100vh',
-            background: `url(${lufei}) no-repeat`,
+            background: `url(${lufei})`,
             backgroundSize: '100%',
           }}
         >
@@ -181,7 +181,6 @@ class BasicLayout extends React.PureComponent {
             handleMenuCollapse={this.handleMenuCollapse}
             logo={logo}
             isMobile={isMobile}
-            style={{ opacity: 0.95 }}
             {...this.props}
           />
           <Content className={styles.content} style={contentStyle}>
@@ -189,7 +188,7 @@ class BasicLayout extends React.PureComponent {
               {children}
             </Authorized>
           </Content>
-          {/* <Footer style={{ opacity: 0.9 }} /> */}
+          {/* <Footer /> */}
         </Layout>
       </Layout>
     );

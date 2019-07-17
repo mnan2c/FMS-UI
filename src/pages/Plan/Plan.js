@@ -1,23 +1,33 @@
 import React from 'react';
-import { Table, Spin, Card, Popconfirm, Rate } from 'antd';
-import { getPlans, deletePlan, completePlan } from '@/services/plan';
+import { Table, Spin, Card, Popconfirm, Rate, List, Button, Skeleton, Tabs } from 'antd';
+import {
+  getPlans,
+  deletePlan,
+  // completePlan
+} from '@/services/plan';
 // import ReactMarkdown from 'react-markdown';
+// import reqwest from 'reqwest';
 import PlanModal from './PlanModal';
 import { convertStrToUrl, isUrl } from '../../utils/utils';
-
 import styles from './Plan.less';
 
+const { TabPane } = Tabs;
+
 const COMPLETE = 4;
+const PAGESIZE = 8;
 
 class Plan extends React.Component {
   state = {
     isCreate: true,
     listData: [],
-    loading: false,
+    loading: true,
     modalVisible: false,
+    tabKey: '1',
+    // 已完成
+    hasMore: true,
     pagination: {
       current: 1,
-      pageSize: 10,
+      pageSize: PAGESIZE,
     },
   };
 
@@ -53,7 +63,6 @@ class Plan extends React.Component {
           return <div style={{ color }}>{arr}</div>;
         }
         return <div style={{ color }}>{isUrl(val) ? convertStrToUrl(val) : val}</div>;
-        // <ReactMarkdown source={val} linkTarget="_blank" />
       },
     },
     {
@@ -63,11 +72,7 @@ class Plan extends React.Component {
       render: (val, record) => {
         if (!val) return '';
         const color = record.status === COMPLETE ? '#BCAAA4' : '';
-        const dateVal = `${String(val[0]).padStart(4, '0')}-${String(val[1]).padStart(
-          2,
-          '0'
-        )}-${String(val[2]).padStart(2, '0')}`;
-        return <div style={{ color }}>{dateVal}</div>;
+        return <div style={{ color }}>{val.substr(0, 10)}</div>;
       },
     },
     {
@@ -108,56 +113,18 @@ class Plan extends React.Component {
       },
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      width: '10%',
-      render: (val, record) => {
-        let result = '';
-        switch (val) {
-          case 1:
-          default:
-            result = '新建';
-            break;
-          case 2:
-            result = '进行中';
-            break;
-          case 3:
-            result = '阻塞';
-            break;
-          case 4:
-            result = '完成';
-            break;
-        }
-        const color = record.status === COMPLETE ? '#BCAAA4' : '';
-        return <div style={{ color }}>{result}</div>;
-      },
-    },
-    {
       title: '操作',
       key: 'action',
       width: '15%',
       render: (text, record) => (
         <>
-          {/* record.status === COMPLETE ? (
-            undefined
-          ) : (
-            <Popconfirm
-              title="确认已完成吗？"
-              okText="是"
-              cancelText="否"
-              onConfirm={() => this.completePlan(record)}
-            >
-              <a>完成</a>
-            </Popconfirm>
-          )}
-          {record.status === COMPLETE ? undefined : <span> | </span> */}
           <a onClick={() => this.updateEntity(record)}>修改</a>
           <span> | </span>
           <Popconfirm
             title="确认删除吗？"
             okText="是"
             cancelText="否"
-            onConfirm={() => this.deleteEntity(record)}
+            onConfirm={() => this.deleteEntity(record, false)}
           >
             <a>删除</a>
           </Popconfirm>
@@ -167,27 +134,49 @@ class Plan extends React.Component {
   ];
 
   componentDidMount() {
-    this.refreshList();
+    this.refreshList(false);
   }
 
-  refreshList = pageParam => {
-    const { pagination } = this.state;
+  refreshList = (isComplete, pageParam) => {
+    const { pagination, listData } = this.state;
     this.setState({ loading: true });
     getPlans({
       ...pagination,
+      status: isComplete ? '4' : '1,2,3',
       current: pageParam ? pagination.current - 1 : 0,
     })
       .then(resp => {
         if (resp) {
           pagination.total = resp.data.totalElements;
-          this.setState({
-            listData: resp.data.content,
-            loading: false,
-            pagination: {
-              ...pagination,
-              current: pageParam ? pagination.current : 1,
-            },
-          });
+          if (isComplete) {
+            const newData = listData.concat(resp.data.content);
+            this.setState(
+              {
+                hasMore: !!resp.data.content && resp.data.content.length === pagination.pageSize,
+                listData: newData,
+                loading: false,
+                pagination: {
+                  ...pagination,
+                  current: pageParam ? pagination.current : 1,
+                },
+              },
+              () => {
+                // Resetting window's offsetTop so:to display react-virtualized demo underfloor.
+                // In real scene, you can using public method of react-virtualized:
+                // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
+                window.dispatchEvent(new Event('resize'));
+              }
+            );
+          } else {
+            this.setState({
+              listData: resp.data.content,
+              loading: false,
+              pagination: {
+                ...pagination,
+                current: pageParam ? pagination.current : 1,
+              },
+            });
+          }
         }
       })
       .catch(() => {
@@ -198,12 +187,15 @@ class Plan extends React.Component {
   handleCloseModal = refresh => {
     this.setState({ modalVisible: false });
     if (refresh) {
-      this.refreshList();
+      this.refreshList(false);
     }
   };
 
-  deleteEntity = param => {
-    deletePlan(param.id).then(() => this.refreshList());
+  deleteEntity = (param, isComplete) => {
+    this.setState({
+      listData: [],
+    });
+    deletePlan(param.id).then(() => this.refreshList(isComplete));
   };
 
   updateEntity = record => {
@@ -221,50 +213,132 @@ class Plan extends React.Component {
     });
   };
 
-  completePlan = param => {
-    completePlan(param.id).then(() => this.refreshList());
-  };
-
   handleTableChange = pageParam => {
-    const pager = { ...this.state.pagination };
+    const { pagination } = this.state;
+    const pager = { ...pagination };
     pager.current = pageParam.current;
     this.setState(
       {
         pagination: pager,
       },
       () => {
-        const { pagination } = this.state;
-        this.refreshList(pagination);
+        this.refreshList(false, pagination);
+      }
+    );
+  };
+
+  onLoadMore = () => {
+    const { pagination } = this.state;
+    this.setState(
+      {
+        pagination: {
+          ...pagination,
+          current: pagination.current + 1,
+        },
+      },
+      () => {
+        this.refreshList(true, pagination);
+      }
+    );
+  };
+
+  callback = key => {
+    this.setState(
+      {
+        loading: true,
+        tabKey: key,
+        listData: [],
+        pagination: {
+          current: 1,
+          pageSize: PAGESIZE,
+        },
+      },
+      () => {
+        if (key === '1') {
+          this.refreshList(false);
+        } else {
+          this.refreshList(true);
+        }
       }
     );
   };
 
   render() {
-    const { listData, loading, modalVisible, pagination, isCreate, record } = this.state;
+    const {
+      listData,
+      loading,
+      modalVisible,
+      pagination,
+      isCreate,
+      record,
+      tabKey,
+      hasMore,
+    } = this.state;
 
     const dataWithKey = listData.map(data => ({ ...data, key: data.id }));
 
+    const loadMore =
+      hasMore && !loading ? (
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: 12,
+            height: 32,
+            lineHeight: '32px',
+          }}
+        >
+          <Button onClick={this.onLoadMore}>加载更多...</Button>
+        </div>
+      ) : null;
+    const extraContent = tabKey === '1' ? <a onClick={this.createEntity}>新增</a> : undefined;
+
     return (
-      <Card
-        title="小目标"
-        extra={<a onClick={this.createEntity}>新增</a>}
-        style={{ background: 'rgba(255, 255, 255, 0.9)' }}
-      >
-        <Spin spinning={loading}>
-          <Table
-            columns={this.columns}
-            className={styles.fixedWidthTable}
-            dataSource={dataWithKey}
-            pagination={pagination}
-            onChange={this.handleTableChange}
-          />
-        </Spin>
-        <PlanModal
-          visible={modalVisible}
-          onClose={this.handleCloseModal}
-          isCreate={isCreate}
-          record={record}
-        />
+      <Card>
+        <Tabs defaultActiveKey="1" onChange={this.callback} tabBarExtraContent={extraContent}>
+          <TabPane tab="进行中" key="1">
+            <Spin spinning={loading}>
+              <Table
+                columns={this.columns}
+                className={styles.fixedWidthTable}
+                dataSource={dataWithKey}
+                pagination={pagination}
+                onChange={this.handleTableChange}
+              />
+            </Spin>
+            <PlanModal
+              visible={modalVisible}
+              onClose={this.handleCloseModal}
+              isCreate={isCreate}
+              record={record}
+            />
+          </TabPane>
+          <TabPane tab="已完成" key="2">
+            <List
+              loading={loading}
+              itemLayout="horizontal"
+              loadMore={loadMore}
+              dataSource={listData}
+              renderItem={item => (
+                <List.Item
+                  actions={[
+                    <Popconfirm
+                      title="确认删除吗？"
+                      okText="是"
+                      cancelText="否"
+                      onConfirm={() => this.deleteEntity(item, true)}
+                    >
+                      <a>删除</a>
+                    </Popconfirm>,
+                  ]}
+                >
+                  <Skeleton avatar title={false} loading={loading} active>
+                    <List.Item.Meta title={`[${item.id}]${item.name}`} />
+                  </Skeleton>
+                </List.Item>
+              )}
+            />
+          </TabPane>
+        </Tabs>
       </Card>
     );
   }

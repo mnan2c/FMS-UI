@@ -14,13 +14,25 @@ export default [
     path: '/',
     component: '../layouts/BasicLayout',
     routes: [
-      { path: '/', redirect: '/plan'},
+      { path: '/', redirect: '/plan/signin'},
       {
         path: '/plan',
         name: 'plan',
         icon: 'schedule',
+        routes: [{
+          path: '/plan/signin',
+          name: 'signin',
+          component: '../pages/Plan/Signin',
+        },{
+          path: '/plan/short-term',
+          name: 'short-term',
+          component: '../pages/Plan/Plan',
+        },{
+          path: '/plan/long-term',
+          name: 'long-term',
+          component: '../pages/Plan/Plan',
+        }],
         // authority: ['admin'],
-        component: '../pages/Plan/Plan',
       },
       {
         path: '/users',
@@ -29,13 +41,13 @@ export default [
         authority: ['admin'],
         component: '../pages/User',
       },
-      {
-        path: '/notice',
-        name: 'notice',
-        icon: 'sound',
-        authority: ['admin'],
-        component: '../pages/Notice',
-      },
+      // {
+      //   path: '/notice',
+      //   name: 'notice',
+      //   icon: 'sound',
+      //   authority: ['admin'],
+      //   component: '../pages/Notice',
+      // },
       {
         path: '/cee',
         name: 'cee',

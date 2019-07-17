@@ -1,20 +1,9 @@
 import React, { PureComponent } from 'react';
 import { getNotices, deleteItem } from '@/services/notice';
-import TagCloud from 'react-tag-cloud';
-import randomColor from 'randomcolor';
-import { Icon, message } from 'antd';
+// import TagCloud from 'react-tag-cloud';
+import { message } from 'antd';
+import { TagCloud } from 'ant-design-pro/lib/Charts';
 import AddNoticeModal from './AddNoticeModal';
-
-const styles = {
-  large: {
-    fontSize: 60,
-    fontWeight: 'bold',
-  },
-  small: {
-    opacity: 0.7,
-    fontSize: 16,
-  },
-};
 
 class Notice extends PureComponent {
   state = {
@@ -34,7 +23,7 @@ class Notice extends PureComponent {
     const { pagination } = this.state;
     getNotices(pagination).then(resp => {
       this.setState({
-        data: resp.data.content,
+        data: resp && resp.data.content,
       });
     });
   };
@@ -61,48 +50,16 @@ class Notice extends PureComponent {
 
   render() {
     const { data, modalVisible } = this.state;
-    const domWithData = data.map(item => {
-      let itemStyle;
-      switch (item.importance) {
-        case 3:
-          itemStyle = styles.large;
-          break;
-        case 1:
-          itemStyle = styles.small;
-          break;
-        default:
-          break;
-      }
-      return (
-        <div style={itemStyle} key={item.id}>
-          {item.name}
-          <Icon
-            type="close"
-            style={{ fontSize: 15, color: '#BCAAA4' }}
-            onClick={() => this.deleteItem(item.id)}
-          />
-        </div>
-      );
-    });
+    const tagData = data.map(item => ({
+      ...item,
+      value: item.importance,
+    }));
     return (
       <>
-        <a style={{ float: 'right' }} onClick={this.showModal}>
+        {/* <a style={{ float: 'right' }} onClick={this.showModal}>
           新增
-        </a>
-        <TagCloud
-          style={{
-            fontFamily: 'sans-serif',
-            fontSize: 20,
-            fontWeight: 'bold',
-            fontStyle: 'italic',
-            color: () => randomColor(),
-            padding: 5,
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          {domWithData}
-        </TagCloud>
+        </a> */}
+        <TagCloud data={tagData} height={200} />
         <AddNoticeModal visible={modalVisible} onClose={this.handleCloseModal} />
       </>
     );

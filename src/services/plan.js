@@ -10,8 +10,8 @@ export async function savePlan(item, isCreate) {
 }
 
 export async function getPlans(pagination) {
-  const { current, pageSize } = pagination;
-  return request(`/api/plans?page=${current}&size=${pageSize}`);
+  const { current, pageSize, status } = pagination;
+  return request(`/api/plans/page?page=${current}&size=${pageSize}&status=${status}`);
 }
 
 export async function deletePlan(id) {
